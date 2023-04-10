@@ -1,0 +1,184 @@
+
+syntax = "proto3";
+
+package room;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+// Generated according to https://cloud.google.com/apis/design/standard_methods
+service RoomService {
+  rpc ListRooms(ListRoomsRequest) returns (ListRoomsResponse) {
+  }
+
+  rpc GetRoom(GetRoomRequest) returns (Room) {
+  }
+
+  rpc CreateRoom(CreateRoomRequest) returns (Room) {
+  }
+
+  rpc UpdateRoom(UpdateRoomRequest) returns (Room) {
+  }
+
+  rpc DeleteRoom(DeleteRoomRequest) returns (google.protobuf.Empty) {
+  }
+}
+
+message Room {
+  string id = 1;
+  string name = 2;
+  string owner = 3;
+  string space_id = 4;
+  string description = 5;
+  repeated string participants = 6;
+  google.protobuf.Timestamp created_at = 99;
+}
+
+// TODO: Need a service for this message
+message Space {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  repeated Room rooms = 4;
+  repeated string participants = 5;
+  google.protobuf.Timestamp created_at = 99;
+}
+
+message ListRoomsRequest {
+  // The parent resource name, for example, "shelves/shelf1"
+  string parent = 1;
+
+  // The maximum number of items to return.
+  int32 page_size = 2;
+
+  // The next_page_token value returned from a previous List request, if any.
+  string page_token = 3;
+}
+
+message ListRoomsResponse {
+  // The field name should match the noun "Room" in the method name.
+  // There will be a maximum number of items returned based on the page_size field in the request.
+  repeated Room rooms = 1;
+
+  // Token to retrieve the next page of results, or empty if there are no more results in the list.
+  string next_page_token = 2;
+}
+
+message GetRoomRequest {
+  // The field will contain name of the resource requested.
+  string name = 1;
+  
+  google.protobuf.FieldMask field_mask = 2;
+}
+
+message CreateRoomRequest {
+  // The Room resource to create.
+  // The field name should match the Noun in the method name.
+  Room room = 3;
+}
+
+message UpdateRoomRequest {
+  // The Room resource which replaces the resource on the server.
+  Room room = 1;
+
+  google.protobuf.FieldMask field_mask = 2;
+}
+
+message DeleteRoomRequest {
+  // The resource name of the Room to be deleted.
+  string id = 1;
+}
+
+// Generated according to https://cloud.google.com/apis/design/standard_methods
+service MessageService {
+  rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse) {
+  }
+
+  rpc GetMessage(GetMessageRequest) returns (Message) {
+  }
+
+  rpc CreateMessage(CreateMessageRequest) returns (Message) {
+  }
+
+  rpc UpdateMessage(UpdateMessageRequest) returns (Message) {
+  }
+
+  rpc DeleteMessage(DeleteMessageRequest) returns (google.protobuf.Empty) {
+  }
+}
+
+message Message {
+  string id = 1;
+  string sender = 2;
+  string room_id = 3;
+  oneof body {
+    PlainBody plain = 7;
+    KeysRotation keys_rotation = 8;
+  }
+  optional Thread thread = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message PlainBody {
+  bytes content = 1;
+  repeated string attachments = 2;
+}
+
+message Thread {
+  string id = 1;
+  repeated string participants = 2;
+}
+
+message KeysRotation {
+  map<string, bytes> keys = 1;
+  KeysRotationKind kind = 2; 
+}
+
+enum KeysRotationKind {
+  JOIN = 0;
+  LEAVE = 1;
+}
+
+message ListMessagesRequest {
+  // The maximum number of items to return.
+  int32 page_size = 2;
+
+  // The next_page_token value returned from a previous List request, if any.
+  string page_token = 3;
+}
+
+message ListMessagesResponse {
+  // The field name should match the noun "Message" in the method name.
+  // There will be a maximum number of items returned based on the page_size field in the request.
+  repeated Message Messages = 1;
+
+  // Token to retrieve the next page of results, or empty if there are no more results in the list.
+  string next_page_token = 2;
+}
+
+message GetMessageRequest {
+  // The id of the resource requested.
+  string id = 1;
+}
+
+message CreateMessageRequest {
+  // The Message resource to create.
+  // The field name should match the Noun in the method name.
+  Message Message = 3;
+}
+
+message UpdateMessageRequest {
+  // The Message resource which replaces the resource on the server.
+  Message Message = 1;
+
+  // The update mask applies to the resource. For the `FieldMask` definition,
+  // see https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask
+  google.protobuf.FieldMask field_mask = 2;
+}
+
+message DeleteMessageRequest {
+  // The id of the Message to be deleted.
+  string id = 1;
+}

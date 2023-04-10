@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package federation;
+
+import "google/protobuf/timestamp.proto";
+
+message Host {
+    string addr = 1;
+    bool forwarder = 2;
+    google.protobuf.Timestamp last_seen = 3;
+}
+
+message Hosts {
+    repeated Host hosts = 1;
+}
+
+message ForwardPacket {
+    repeated Host path = 1;
+    bytes data = 2;
+    uint32 hop = 3;
+}
+
+message AcknowledgePacket {
+    bool success = 1;
+    ForwardPacket forward = 2;
+}
+
+
+message Packet {
+    oneof packet {
+        ForwardPacket forward = 1;
+        AcknowledgePacket acknowledge = 2;
+    }
+}
+
+
+service FederationService {
+    rpc Acknowledge(Host) returns (Hosts) {}
+    rpc Forward(stream Packet) returns (stream Packet) {}
+    rpc RequestPath(Host) returns (Hosts) {};
+}
