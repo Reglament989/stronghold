@@ -60,6 +60,25 @@ pub struct TimestampDef {
     pub nanos: i32,
 }
 
+impl From<Option<prost_types::Timestamp>> for TimestampDef {
+    fn from(s: Option<prost_types::Timestamp>) -> TimestampDef {
+        let s = s.unwrap_or_default();
+        TimestampDef {
+            seconds: s.seconds,
+            nanos: s.nanos,
+        }
+    }
+}
+
+impl From<TimestampDef> for Document {
+    fn from(value: TimestampDef) -> Self {
+        let mut doc = mongodb::bson::Document::new();
+        doc.insert("seconds", value.seconds);
+        doc.insert("nanos", value.nanos);
+        doc
+    }
+}
+
 pub mod timestamp_ref {
     use super::TimestampDef;
     use prost_types::Timestamp;

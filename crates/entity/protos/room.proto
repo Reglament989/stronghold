@@ -32,16 +32,7 @@ message Room {
   string space_id = 4;
   string description = 5;
   repeated string participants = 6;
-  google.protobuf.Timestamp created_at = 99;
-}
-
-// TODO: Need a service for this message
-message Space {
-  string id = 1;
-  string title = 2;
-  string description = 3;
-  repeated Room rooms = 4;
-  repeated string participants = 5;
+  repeated string keys_rotation = 7; // Keys rotation messages ids, sorted by created_at, for performance reasons 
   google.protobuf.Timestamp created_at = 99;
 }
 
@@ -95,10 +86,10 @@ service MessageService {
   rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse) {
   }
 
-  rpc GetMessage(GetMessageRequest) returns (Message) {
+  rpc SendMessage(SendMessageRequest) returns (google.protobuf.Empty) {
   }
 
-  rpc CreateMessage(CreateMessageRequest) returns (Message) {
+  rpc AcknowledgeMessage(AcknowledgeMessageRequest) returns (google.protobuf.Empty) {
   }
 
   rpc UpdateMessage(UpdateMessageRequest) returns (Message) {
@@ -106,6 +97,8 @@ service MessageService {
 
   rpc DeleteMessage(DeleteMessageRequest) returns (google.protobuf.Empty) {
   }
+
+  rpc ListThreadMessages (ListThreadMessagesRequest) returns (ListMessagesResponse);
 }
 
 message Message {
@@ -113,12 +106,13 @@ message Message {
   string sender = 2;
   string room_id = 3;
   oneof body {
-    PlainBody plain = 7;
-    KeysRotation keys_rotation = 8;
+    PlainBody plain = 8;
+    KeysRotation keys_rotation = 9;
   }
   optional Thread thread = 4;
-  google.protobuf.Timestamp created_at = 5;
-  google.protobuf.Timestamp updated_at = 6;
+  map<string, sint64> read_by = 5; // Map<user_id, read_at>
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
 }
 
 message PlainBody {
@@ -143,10 +137,25 @@ enum KeysRotationKind {
 
 message ListMessagesRequest {
   // The maximum number of items to return.
-  int32 page_size = 2;
+  int32 page_size = 1;
 
   // The next_page_token value returned from a previous List request, if any.
-  string page_token = 3;
+  string page_token = 2;
+
+  string room_id = 3;
+
+  google.protobuf.Timestamp from_date = 4;
+
+  google.protobuf.FieldMask field_mask = 5;
+}
+
+message ListThreadMessagesRequest {
+  ListMessagesRequest request = 1;
+  string thread_id = 2;
+}
+
+message AcknowledgeMessageRequest {
+  string message_id = 1;
 }
 
 message ListMessagesResponse {
@@ -163,7 +172,7 @@ message GetMessageRequest {
   string id = 1;
 }
 
-message CreateMessageRequest {
+message SendMessageRequest {
   // The Message resource to create.
   // The field name should match the Noun in the method name.
   Message Message = 3;
@@ -180,5 +189,86 @@ message UpdateMessageRequest {
 
 message DeleteMessageRequest {
   // The id of the Message to be deleted.
+  string id = 1;
+}
+
+// Generated according to https://cloud.google.com/apis/design/standard_methods
+service SpaceService {
+  rpc ListSpaces(ListSpacesRequest) returns (ListSpacesResponse) {
+  }
+
+  rpc GetSpace(GetSpaceRequest) returns (Space) {
+  }
+
+  rpc CreateSpace(CreateSpaceRequest) returns (Space) {
+  }
+
+  rpc UpdateSpace(UpdateSpaceRequest) returns (Space) {
+  }
+
+  rpc DeleteSpace(DeleteSpaceRequest) returns (google.protobuf.Empty) {
+  }
+}
+
+// TODO: Need a service for this message
+message Space {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  repeated Room rooms = 4;
+  repeated string participants = 5;
+  google.protobuf.Timestamp created_at = 99;
+}
+
+message ListSpacesRequest {
+  // The parent resource name, for example, "shelves/shelf1"
+  string parent = 1;
+
+  // The maximum number of items to return.
+  int32 page_size = 2;
+
+  // The next_page_token value returned from a previous List request, if any.
+  string page_token = 3;
+}
+
+message ListSpacesResponse {
+  // The field name should match the noun "Space" in the method name.
+  // There will be a maximum number of items returned based on the page_size field in the request.
+  repeated Space Spaces = 1;
+
+  // Token to retrieve the next page of results, or empty if there are no more results in the list.
+  string next_page_token = 2;
+}
+
+message GetSpaceRequest {
+  // The field will contain name of the resource requested.
+  string name = 1;
+
+  google.protobuf.FieldMask field_mask = 2;
+}
+
+message CreateSpaceRequest {
+  // The parent resource name where the Space is to be created.
+  string parent = 1;
+
+  // The Space id to use for this Space.
+  string Space_id = 2;
+
+  // The Space resource to create.
+  // The field name should match the Noun in the method name.
+  Space Space = 3;
+}
+
+message UpdateSpaceRequest {
+  // The Space resource which replaces the resource on the server.
+  Space Space = 1;
+
+  // The update mask applies to the resource. For the `FieldMask` definition,
+  // see https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask
+  google.protobuf.FieldMask field_mask = 2;
+}
+
+message DeleteSpaceRequest {
+  // The resource name of the Space to be deleted.
   string id = 1;
 }

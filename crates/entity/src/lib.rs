@@ -76,13 +76,13 @@ pub trait Entity<T: Serialize + DeserializeOwned + Unpin + Send + Sync + Clone> 
     async fn update_one<F: Into<Document> + std::marker::Send>(
         ctx: &EntityContext,
         filter: F,
-        payload: &T,
+        payload: F,
     ) -> Result<()> {
         Self::collection(ctx)
             .await
             .update_one(
                 filter.into(),
-                doc! {"$set": mongodb::bson::to_document(&payload)?},
+                payload.into(), // doc! {"$set": mongodb::bson::to_document(&payload)?},
                 None,
             )
             .await?;

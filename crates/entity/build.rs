@@ -12,6 +12,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .field_attribute("last_seen", "#[serde(with = \"crate::helpers::timestamp_ref\")]")
         .field_attribute("created_at", "#[serde(with = \"crate::helpers::timestamp_ref\")]")
         .field_attribute("updated_at", "#[serde(with = \"crate::helpers::timestamp_ref\")]")
+        .field_attribute("from_date", "#[serde(with = \"crate::helpers::timestamp_ref\")]")
+        
         .field_attribute("room.Room.id", 
         "#[serde(rename(deserialize = \"_id\"), deserialize_with = \"mongodb::bson::serde_helpers::deserialize_hex_string_from_object_id\")]")
         .compile(&["./protos/room.proto", "./protos/federation.proto"], &["./protos", "./protos/lib"]);

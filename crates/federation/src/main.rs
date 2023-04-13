@@ -171,7 +171,7 @@ async fn main() -> eyre::Result<()> {
     let server = FederationService::new(host).await;
 
     let svc = FederationServiceServer::new(server);
-
+    dbg!("Starting server");
     Server::builder()
         .add_service(reflector)
         .add_service(svc)
